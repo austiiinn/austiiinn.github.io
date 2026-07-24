@@ -1,72 +1,68 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
-<meta name="viewport" Content="width=device-width,intial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10 Buttons</title>
+
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400&display=swap');
-*{
-margin: 0;
-padding: 0;
-box-sizing: border-box;
-}
-html,body{
-height: 100%;
-}
-body{
-display: grid;
-place-items: center;
-background: #131419;
-}
-.clock{
-background: #131419;
-height: 120px;
-line-height: 120px;
-text-align: center;
-padding: 0 30px;
-box-shadow: -3px -3px 7px rgba(255,255,255,0.05),
-3px 3px 5px rgba(0,0,0,0.5);
-}
-.clock .display{
-font-size: 60px;
-color: cyan;
-letter-spacing: 5px;
-font-family: 'Orbitron', sans-serif;
-}
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
+
+    body {
+        background: #1e1e1e;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+    }
+
+    .container {
+        display: grid;
+        grid-template-columns: repeat(2, 200px);
+        gap: 20px;
+    }
+
+    button {
+        height: 60px;
+        font-size: 18px;
+        border: none;
+        border-radius: 12px;
+        background: #3498db;
+        color: white;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    button:hover {
+        background: #2980b9;
+        transform: translateY(-3px);
+    }
+
+    button:active {
+        transform: scale(0.97);
+    }
 </style>
-<meta charset="utf-8">
-<title>Digital Clock</title>
 </head>
+
 <body>
-<div class="clock">
-<div class="display">
+
+<div class="container">
+    <button>Button 1</button>
+    <button>Button 2</button>
+    <button>Button 3</button>
+    <button>Button 4</button>
+    <button>Button 5</button>
+    <button>Button 6</button>
+    <button>Button 7</button>
+    <button>Button 8</button>
+    <button>Button 9</button>
+    <button>Button 10</button>
 </div>
-</div>
-<script>
-setInterval(function(){
-const clock = document.querySelector(".display");
-let time = new Date();
-let sec = time.getSeconds();
-let min = time.getMinutes();
-let hr = time.getHours();
-let day = 'AM';
-if(hr > 12){
-day = 'PM';
-hr = hr - 12;
-}
-if(hr == 0){
-hr = 12;
-}
-if(sec < 10){
-sec = '0' + sec;
-}
-if(min < 10){
-min = '0' + min;
-}
-if(hr < 10){
-hr = '0' + hr;
-}
-clock.textContent = hr + ':' + min + ':' + sec + " " + day;
-});
-</script>
+
 </body>
 </html>
