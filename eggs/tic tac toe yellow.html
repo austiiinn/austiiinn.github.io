@@ -1,0 +1,291 @@
+<html>
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f8b500, #fceabb);
+            font-family: 'Arial', sans-serif;
+        }
+        .cornhub-text {
+            color: #f8b500;
+            text-shadow: 0 0 5px #f8b500, 0 0 10px #f8b500, 0 0 20px #f8b500;
+        }
+        .cornhub-border {
+            border: 2px solid #f8b500;
+            box-shadow: 0 0 5px #f8b500, 0 0 10px #f8b500, 0 0 20px #f8b500;
+        }
+        .cornhub-button {
+            background: #f8b500;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .cornhub-button:hover {
+            background: #e0a400;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cells = document.querySelectorAll('.cell');
+            const statusText = document.getElementById('status');
+            const playerScore = document.getElementById('player-score');
+            const computerScore = document.getElementById('computer-score');
+            const timerElement = document.getElementById('timer');
+            const popup = document.getElementById('popup');
+            const popupText = document.getElementById('popup-text');
+            const playAgainButton = document.getElementById('play-again');
+            const soundIcon = document.getElementById('sound-icon');
+            const backgroundMusic = document.getElementById('background-music');
+            let currentPlayer = 'O';
+            let gameActive = true;
+            let board = ['', '', '', '', '', '', '', '', ''];
+            let timeLeft = 120; // 2 minutes in seconds
+            let firstMove = 'O';
+            let soundOn = true;
+
+            const winningConditions = [
+                [0, 1, 2],
+                [3, 4, 5],
+                [6, 7, 8],
+                [0, 3, 6],
+                [1, 4, 7],
+                [2, 5, 8],
+                [0, 4, 8],
+                [2, 4, 6]
+            ];
+
+            function handleCellClick(event) {
+                const clickedCell = event.target;
+                const clickedCellIndex = Array.from(cells).indexOf(clickedCell);
+
+                if (board[clickedCellIndex] !== '' || !gameActive) {
+                    return;
+                }
+
+                board[clickedCellIndex] = currentPlayer;
+                clickedCell.textContent = currentPlayer;
+
+                if (checkWin()) {
+                    statusText.textContent = `${currentPlayer} wins!`;
+                    gameActive = false;
+                    updateScore();
+                    setTimeout(resetBoard, 1000);
+                } else if (board.every(cell => cell !== '')) {
+                    statusText.textContent = 'Draw!';
+                    gameActive = false;
+                    setTimeout(resetBoard, 1000);
+                } else {
+                    currentPlayer = currentPlayer === 'O' ? 'X' : 'O';
+                    statusText.textContent = `${currentPlayer}'s turn`;
+                    if (currentPlayer === 'X') {
+                        setTimeout(computerMove, 500); // Delay for better UX
+                    }
+                }
+            }
+
+            function computerMove() {
+                const emptyCells = board.map((cell, index) => cell === '' ? index : null).filter(index => index !== null);
+                let moveMade = false;
+
+                // Try to win
+                for (let condition of winningConditions) {
+                    const [a, b, c] = condition;
+                    if (board[a] === 'X' && board[b] === 'X' && board[c] === '') {
+                        board[c] = 'X';
+                        cells[c].textContent = 'X';
+                        moveMade = true;
+                        break;
+                    } else if (board[a] === 'X' && board[c] === 'X' && board[b] === '') {
+                        board[b] = 'X';
+                        cells[b].textContent = 'X';
+                        moveMade = true;
+                        break;
+                    } else if (board[b] === 'X' && board[c] === 'X' && board[a] === '') {
+                        board[a] = 'X';
+                        cells[a].textContent = 'X';
+                        moveMade = true;
+                        break;
+                    }
+                }
+
+                // Block player from winning
+                if (!moveMade) {
+                    for (let condition of winningConditions) {
+                        const [a, b, c] = condition;
+                        if (board[a] === 'O' && board[b] === 'O' && board[c] === '') {
+                            board[c] = 'X';
+                            cells[c].textContent = 'X';
+                            moveMade = true;
+                            break;
+                        } else if (board[a] === 'O' && board[c] === 'O' && board[b] === '') {
+                            board[b] = 'X';
+                            cells[b].textContent = 'X';
+                            moveMade = true;
+                            break;
+                        } else if (board[b] === 'O' && board[c] === 'O' && board[a] === '') {
+                            board[a] = 'X';
+                            cells[a].textContent = 'X';
+                            moveMade = true;
+                            break;
+                        }
+                    }
+                }
+
+                // Random move
+                if (!moveMade) {
+                    const randomIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                    board[randomIndex] = 'X';
+                    cells[randomIndex].textContent = 'X';
+                }
+
+                if (checkWin()) {
+                    statusText.textContent = `X wins!`;
+                    gameActive = false;
+                    updateScore();
+                    setTimeout(resetBoard, 1000);
+                } else if (board.every(cell => cell !== '')) {
+                    statusText.textContent = 'Draw!';
+                    gameActive = false;
+                    setTimeout(resetBoard, 1000);
+                } else {
+                    currentPlayer = 'O';
+                    statusText.textContent = `${currentPlayer}'s turn`;
+                }
+            }
+
+            function checkWin() {
+                return winningConditions.some(condition => {
+                    return condition.every(index => board[index] === currentPlayer);
+                });
+            }
+
+            function updateScore() {
+                if (currentPlayer === 'O') {
+                    playerScore.textContent = parseInt(playerScore.textContent) + 1;
+                } else {
+                    computerScore.textContent = parseInt(computerScore.textContent) + 1;
+                }
+            }
+
+            function resetBoard() {
+                board = ['', '', '', '', '', '', '', '', ''];
+                cells.forEach(cell => cell.textContent = '');
+                gameActive = true;
+                firstMove = firstMove === 'O' ? 'X' : 'O';
+                currentPlayer = firstMove;
+                statusText.textContent = `${currentPlayer}'s turn`;
+                if (currentPlayer === 'X') {
+                    setTimeout(computerMove, 500); // Delay for better UX
+                }
+            }
+
+            function startTimer() {
+                const timerInterval = setInterval(() => {
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        statusText.textContent = 'Time\'s up!';
+                        gameActive = false;
+                        showPopup();
+                    } else {
+                        timeLeft--;
+                        const minutes = Math.floor(timeLeft / 60);
+                        const seconds = timeLeft % 60;
+                        timerElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                    }
+                }, 1000);
+            }
+
+            function showPopup() {
+                const playerPoints = parseInt(playerScore.textContent);
+                const computerPoints = parseInt(computerScore.textContent);
+                if (playerPoints > computerPoints) {
+                    popupText.textContent = 'Player wins!';
+                } else if (computerPoints > playerPoints) {
+                    popupText.textContent = 'Computer wins!';
+                } else {
+                    popupText.textContent = 'It\'s a draw!';
+                }
+                popup.classList.remove('hidden');
+            }
+
+            playAgainButton.addEventListener('click', () => {
+                popup.classList.add('hidden');
+                playerScore.textContent = '0';
+                computerScore.textContent = '0';
+                timeLeft = 120;
+                resetBoard();
+                startTimer();
+            });
+
+            soundIcon.addEventListener('click', () => {
+                soundOn = !soundOn;
+                soundIcon.classList.toggle('fa-volume-up', soundOn);
+                soundIcon.classList.toggle('fa-volume-mute', !soundOn);
+                if (soundOn) {
+                    backgroundMusic.play();
+                } else {
+                    backgroundMusic.pause();
+                }
+            });
+
+            cells.forEach(cell => cell.addEventListener('click', handleCellClick));
+            startTimer();
+        });
+    </script>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen text-white">
+    <audio id="background-music" loop>
+        <source src="https://www.bensound.com/bensound-music/bensound-sunny.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    <div class="absolute top-4 left-4">
+        <i class="fas fa-arrow-left text-2xl cornhub-text"></i>
+    </div>
+    <div class="absolute top-4 right-4">
+        <i id="sound-icon" class="fas fa-volume-up text-2xl cursor-pointer cornhub-text"></i>
+    </div>
+    <div class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-yellow-300 text-yellow-900 rounded-full px-4 py-1 text-lg cornhub-border" id="timer">
+        2:00
+    </div>
+    <div class="absolute top-4 right-16">
+        <i class="fas fa-cog text-2xl cornhub-text"></i>
+    </div>
+    <div class="flex flex-col items-center mt-20">
+        <div class="grid grid-cols-3 gap-2 bg-yellow-800 p-4 rounded-lg cornhub-border">
+            <div class="w-20 h-20 flex items-center justify-center bg-yellow-700 rounded-lg cell text-4xl text-yellow-300 cursor-pointer cornhub-border"></div>
+            <div class="w-20 h-20 flex items-center justify-center bg-yellow-700 rounded-lg cell text-4xl text-yellow-300 cursor-pointer cornhub-border"></div>
+            <div class="w-20 h-20 flex items-center justify-center bg-yellow-700 rounded-lg cell text-4xl text-yellow-300 cursor-pointer cornhub-border"></div>
+            <div class="w-20 h-20 flex items-center justify-center bg-yellow-700 rounded-lg cell text-4xl text-yellow-300 cursor-pointer cornhub-border"></div>
+            <div class="w-20 h-20 flex items-center justify-center bg-yellow-700 rounded-lg cell text-4xl text-yellow-300 cursor-pointer cornhub-border"></div>
+            <div class="w-20 h-20 flex items-center justify-center bg-yellow-700 rounded-lg cell text-4xl text-yellow-300 cursor-pointer cornhub-border"></div>
+            <div class="w-20 h-20 flex items-center justify-center bg-yellow-700 rounded-lg cell text-4xl text-yellow-300 cursor-pointer cornhub-border"></div>
+            <div class="w-20 h-20 flex items-center justify-center bg-yellow-700 rounded-lg cell text-4xl text-yellow-300 cursor-pointer cornhub-border"></div>
+            <div class="w-20 h-20 flex items-center justify-center bg-yellow-700 rounded-lg cell text-4xl text-yellow-300 cursor-pointer cornhub-border"></div>
+        </div>
+        <div class="flex mt-8 space-x-4">
+            <div class="flex flex-col items-center bg-yellow-300 text-yellow-900 rounded-lg px-4 py-2 w-24 h-24 cornhub-border">
+                <span class="text-4xl cornhub-text">O</span>
+                <span class="cornhub-text">Player</span>
+                <span id="player-score" class="text-xl cornhub-text">0</span>
+            </div>
+            <div class="flex flex-col items-center bg-yellow-300 text-yellow-900 rounded-lg px-4 py-2 w-24 h-24 cornhub-border">
+                <span class="text-4xl cornhub-text">X</span>
+                <span class="cornhub-text">Computer</span>
+                <span id="computer-score" class="text-xl cornhub-text">0</span>
+            </div>
+        </div>
+        <div id="status" class="mt-4 text-lg cornhub-text">
+            Your turn
+        </div>
+    </div>
+    <div id="popup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white text-yellow-900 p-8 rounded-lg text-center cornhub-border">
+            <p id="popup-text" class="text-2xl mb-4 cornhub-text"></p>
+            <button id="play-again" class="cornhub-button">Play Again</button>
+        </div>
+    </div>
+</body>
+</html>
